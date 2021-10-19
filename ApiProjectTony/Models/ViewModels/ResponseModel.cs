@@ -1,5 +1,7 @@
 ﻿namespace ApiProjectTony.Models.ViewModels
 {
+
+    // we can use this class for our api / generic ajax response model.
     public class ResponseModel<T> where T : class, new()
     {
         public T Data { get; set; }
