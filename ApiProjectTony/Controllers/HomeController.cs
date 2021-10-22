@@ -28,5 +28,13 @@ namespace ApiProjectTony.Controllers
 
             return View(user);
         }
+
+
+        public IActionResult GetCountry(string region = null)
+        {
+            ViewBag.region = region ?? "africa";
+            return View();
+        }
+
     }
 }
