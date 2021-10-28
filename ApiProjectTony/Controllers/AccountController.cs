@@ -1,8 +1,11 @@
 ﻿using ApiProjectTony.Extensions;
+using ApiProjectTony.Models.ViewModels;
 using ApiProjectTony.Models.ViewModels.DTOs;
 using ApiProjectTony.Services.Abstracts;
+using ApiProjectTony.Services.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ApiProjectTony.Controllers
@@ -22,15 +25,26 @@ namespace ApiProjectTony.Controllers
         }
 
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             if (string.IsNullOrEmpty(httpContext.Session.GetJson<string>("token")))
             {
                 return RedirectToAction("Login");
             }
 
-
-            return View();
+            IList<ContentApiModel> content = await xonaService.GetContentAsync();
+            var response = new List<ContentVM>();
+            foreach (var item in content)
+            {
+                ContentVM c = new ContentVM
+                {
+                    title = item.title,
+                    description = item.description,
+                    imageUrl = item.image.url
+                };
+                response.Add(c);
+            }
+            return View(response);
         }
 
         public IActionResult Login()

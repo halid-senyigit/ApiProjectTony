@@ -1,11 +1,14 @@
-﻿using ApiProjectTony.Models.ViewModels.ApiResponseModels;
+﻿using ApiProjectTony.Extensions;
+using ApiProjectTony.Models.ViewModels.ApiResponseModels;
 using ApiProjectTony.Models.ViewModels.DTOs;
 using ApiProjectTony.Services.Abstracts;
 using ApiProjectTony.Services.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,12 +19,19 @@ namespace ApiProjectTony.Services.Concretes
     {
         private readonly IHttpClientFactory clientFactory;
         private readonly IConfiguration configuration;
-
+        private readonly HttpContext httpContext;
         private readonly HttpClient client;
-        public XonaService(IHttpClientFactory clientFactory, IConfiguration configuration)
+        private readonly string token;
+        public XonaService(
+            IHttpClientFactory clientFactory, 
+            IConfiguration configuration,
+            IHttpContextAccessor httpContext
+            )
         {
             this.clientFactory = clientFactory;
             this.configuration = configuration;
+            this.httpContext = httpContext.HttpContext;
+            this.token = this.httpContext.Session.GetJson<string>("token");
 
             client = this.clientFactory.CreateClient();
 
@@ -48,6 +58,38 @@ namespace ApiProjectTony.Services.Concretes
 
             return res;
         }
+
+
+        public async Task<List<ContentApiModel>> GetContentAsync()
+        {
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+            HttpResponseMessage httpResponse = await client.GetAsync(client.BaseAddress + "api:-Kh4zXMz/content");
+            List<ContentApiModel> res = new List<ContentApiModel>();
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                try
+                {
+                    res = JsonConvert.DeserializeObject<List<ContentApiModel>>(await httpResponse.Content.ReadAsStringAsync());
+                }
+                catch (Exception ex)
+                {
+                    httpContext.Session.Remove("token");
+                    // remove token from session
+                }
+            }
+            else
+            {
+                // if status is 401 remove token from session (actually these codes should be written into business layer) 
+                if(httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    httpContext.Session.Remove("token");
+                }
+                throw new Exception("http error");
+            }
+
+            return res;
+        }
+
 
     }
 }

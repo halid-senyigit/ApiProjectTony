@@ -33,7 +33,7 @@ namespace ApiProjectTony
 
             services.AddSingleton<IUserApiService, UserApiService>();
             services.AddSingleton<ICountryApiService, CountryApiService>();
-            services.AddSingleton<IXonaService, XonaService>();
+            services.AddScoped<IXonaService, XonaService>(); // we want to get token from session for each request (scoped)
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
