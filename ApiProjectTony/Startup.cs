@@ -2,6 +2,7 @@ using ApiProjectTony.Services.Abstracts;
 using ApiProjectTony.Services.Concretes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,9 +28,12 @@ namespace ApiProjectTony
         {
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddHttpClient();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSession();
 
             services.AddSingleton<IUserApiService, UserApiService>();
             services.AddSingleton<ICountryApiService, CountryApiService>();
+            services.AddSingleton<IXonaService, XonaService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +49,7 @@ namespace ApiProjectTony
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseSession();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
